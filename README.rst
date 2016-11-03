@@ -11,6 +11,8 @@ A python module to create, manipulate and validate CFDI documents.
 
 * As of now, pycfdi is only useful for CFDI validation.
 
+* Python 3.4, 3.5
+
 
 Usage:
 --------
@@ -22,7 +24,7 @@ Usage:
         'Comprobante': {
             'folio': 123,
             'fecha': '2015-02-18T11:49:20',
-            'formaDePago': 'PAGO UNICO',
+            'formaDePago': 'Pago único',
             'subTotal': 100.00,
             'total': 116.00,
             'tipoDeComprobante': 'ingreso',
@@ -53,7 +55,7 @@ Usage:
                     'cantidad': '1',
                     'unidad': 'PZA',
                     'noIdentificacion': '12B',
-                    'descripcion': 'a totes magotes',
+                    'descripcion': 'Servicio de reparación',
                     'importe': 100,
                     'valorUnitario': 100,
                 },
