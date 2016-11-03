@@ -80,8 +80,4 @@ class Cfdi(object):
             raise CfdiDocumentNotValid
 
     def as_xml(self):
-        if self.is_valid():
-            root_node = self._as_node_object()
-        else:
-            log.exception("CFDI Document not valid. Errors: \"{}\".".format(self.errors))
-            raise CfdiDocumentNotValid
+        raise NotImplementedError
