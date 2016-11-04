@@ -107,12 +107,12 @@ class Cfdi(object):
 
     def is_valid(self):
         validator =self._get_validator()
-        self.errors, self.normalized_document = validator.errors, validator.normalized
+        self.errors, self.normalized = validator.errors, validator.normalized(self.document)
         return not bool(self.errors)
 
     def _as_node_object(self):
         if self.is_valid():
-            return CfdiNode(**self.normalized_document)
+            return CfdiNode(**self.normalized)
         else:
             log.exception("CFDI Document not valid. Errors: \"{}\".".format(self.errors))
             raise CfdiDocumentNotValid
