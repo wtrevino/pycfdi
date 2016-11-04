@@ -46,10 +46,12 @@ Usage:
                     'pais': 'México',
                 },
             },
+
             'Receptor': {
                 'nombre': 'Público en General',
                 'rfc': 'XAXX010101000',
             },
+
             'Conceptos': [
                 {
                     'cantidad': '1',
@@ -60,6 +62,7 @@ Usage:
                     'valorUnitario': 100,
                 },
             ],
+
             'Impuestos': {
                 'Traslados': [
                     {
@@ -74,5 +77,9 @@ Usage:
     }
 
     cfdi = Cfdi(cfdi_doc)
-    cfdi.validate()
+
+    cfdi.is_valid()
     >>> True
+
+    cfdi.errors
+    >>> {}

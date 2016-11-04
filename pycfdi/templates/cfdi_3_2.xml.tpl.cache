@@ -1,0 +1,43 @@
+timestamp: 1478220823.8148942
+
+_extend=_buf.extend;_to_str=to_str;_escape=escape; _extend(('''<?xml version="1.0" encoding="UTF-8"?>
+<cfdi:Comprobante ''', _to_str(Comprobante.print_attributes()), ''' version="3.2"
+    xsi:schemaLocation="http://www.buzonfiscal.com/ns/addenda/bf/2 http://www.buzonfiscal.com/schema/xsd/Addenda_BF_v20.xsd http://www.sat.gob.mx/cfd/3 http://www.sat.gob.mx/sitio_internet/cfd/3/cfdv32.xsd "
+    xmlns:bfa2="http://www.buzonfiscal.com/ns/addenda/bf/2" xmlns:cfdi="http://www.sat.gob.mx/cfd/3"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">\n''', ));
+Emisor = Comprobante.Emisor
+_extend(('''    <cfdi:Emisor nombre="''', _escape(_to_str(Emisor.nombre)), '''" rfc="''', _escape(_to_str(Emisor.rfc)), '''">
+        <cfdi:DomicilioFiscal codigoPostal="64000" pais="México" estado="Nuevo León"
+            municipio="Monterrey" colonia="Fracc. San Pedro" noExterior="1452" calle="Encinos"/>
+        <cfdi:RegimenFiscal Regimen="Regimen General de Ley Personas Morales de Prueba"/>
+    </cfdi:Emisor>\n''', ));
+Receptor = Comprobante.Receptor
+_extend(('''    <cfdi:Receptor ''', _to_str(Receptor.print_attributes()), '''>
+        <cfdi:Domicilio codigoPostal="99170" pais="México" estado="Zacatecas" municipio="Zacatecas"
+            localidad="Ejido La Siembra" colonia="Ejido La Siembra" noExterior="102"
+            calle="Av. Principal"/>
+    </cfdi:Receptor>
+    <cfdi:Conceptos>\n''', ));
+for Concepto in Comprobante.Conceptos:
+    _extend(('''        <cfdi:Concepto ''', _to_str(Concepto.print_attributes()), '''/>\n''', ));
+#endfor
+_extend(('''    </cfdi:Conceptos>\n''', ));
+Impuestos = Comprobante.Impuestos
+if hasattr(Impuestos, 'Traslados') or hasattr(Impuestos, 'Retenciones'):
+    _extend(('''    <cfdi:Impuestos ''', _to_str(Impuestos.print_attributes()), '''>\n''', ));
+    if hasattr(Impuestos, 'Retenciones'):
+        _extend(('''        <cfdi:Retenciones>\n''', ));
+        for Retencion in Impuestos.Retenciones:
+            _extend(('''            <cfdi:Retencion ''', _to_str(Retencion.print_attributes()), '''/>\n''', ));
+        #endfor
+        _extend(('''        </cfdi:Retenciones>\n''', ));
+    #endif
+    if hasattr(Impuestos, 'Traslados'):
+        _extend(('''        <cfdi:Traslados>\n''', ));
+        for Traslado in Impuestos.Traslados:
+            _extend(('''            <cfdi:Traslado ''', _to_str(Traslado.print_attributes()), '''/>\n''', ));
+        #endfor
+        _extend(('''        </cfdi:Traslados>\n''', ));
+    #endif
+#endif
+_extend(('''    </cfdi:Impuestos>\n''', ));

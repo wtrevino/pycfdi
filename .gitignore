@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# Templates
+*.tpl
+
 # Distribution / packaging
 .Python
 env/

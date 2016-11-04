@@ -2,12 +2,16 @@
 
 from __future__ import absolute_import
 
-from .validators import CfdiValidator
+import tenjin
+from tenjin.helpers import to_str, escape
+
+from .validator import CfdiValidator
 from .schema import SchemaConstructor
 
 from collections import namedtuple
 import json
 import logging
+import os
 import sys
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
@@ -49,8 +53,17 @@ class CfdiNode:
     def as_dict(self):
         return CfdiNode._as_dict(self)
 
-    def as_xml(self):
-        pass
+    def get_attr(self, attr):
+        if hasattr(self, attr):
+            return ' {}="{}"'.format(attr, getattr(self, attr))
+        return ''
+
+    def print_attributes(self):
+        output = ''
+        for k, v in self.as_dict().items():
+            if type(v) not in (dict, list):
+                output += '{}="{}" '.format(k, v)
+        return output.strip()
 
 
 class Cfdi(object):
@@ -80,4 +93,10 @@ class Cfdi(object):
             raise CfdiDocumentNotValid
 
     def as_xml(self):
-        raise NotImplementedError
+        root_node = self._as_node_object()
+        context = {'Comprobante': root_node.Comprobante}
+        engine = tenjin.Engine()
+        path = os.path.dirname(__file__)
+        template_name = 'templates/cfdi_{}.xml.tpl'.format(self.version.replace('.', '_'))
+        template_path = os.path.join(path, template_name)
+        return engine.render(template_path, context)
