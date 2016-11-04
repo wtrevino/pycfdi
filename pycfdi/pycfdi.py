@@ -4,10 +4,13 @@ from __future__ import absolute_import
 
 import tenjin
 from tenjin.helpers import to_str, escape
+from xml.etree.ElementTree import ElementTree, Element, tostring
+from xml.dom import minidom
 
 from .validator import CfdiValidator
 from .schema import SchemaConstructor
 
+from io import BytesIO
 from collections import namedtuple
 import json
 import logging
@@ -25,11 +28,13 @@ class CfdiDocumentNotValid(Exception):
 class CfdiNode:
     '''
     '''
-    def __init__(self, **kwargs):
+    def __init__(self, tag='', **kwargs):
         self.__dict__.update(kwargs)
+        self.__namespace__ = kwargs.get('_namespace', 'cfdi')
+        self.__tag__ = tag
         for k, v in self.__dict__.items():
             if isinstance(v, dict):
-                setattr(self, k, CfdiNode(**v))
+                setattr(self, k, CfdiNode(tag=k, **v))
             if isinstance(v, list):
                 setattr(self, k, [CfdiNode(**i) for i in v])
 
@@ -65,6 +70,26 @@ class CfdiNode:
                 output += '{}="{}" '.format(k, v)
         return output.strip()
 
+    def get_attributes(self):
+        attributes = {}
+        for k, v in self.as_dict().items():
+            if k.startswith('_'):
+                continue
+            if type(v) in (dict, list):
+                continue
+            attributes[k] = v
+        return attributes
+
+    def as_etree_node(self, extra_attrs={}):
+        tag = '{}:{}'.format(self.__namespace__, self.__tag__)
+        attributes = self.get_attributes()
+        attributes.update(extra_attrs)
+        element = Element(tag)
+        for k, v in attributes.items():
+            value = '{}'.format(v)
+            element.set(k, value)
+        return element
+
 
 class Cfdi(object):
     '''
@@ -92,11 +117,29 @@ class Cfdi(object):
             log.exception("CFDI Document not valid. Errors: \"{}\".".format(self.errors))
             raise CfdiDocumentNotValid
 
-    def as_xml(self):
-        root_node = self._as_node_object()
-        context = {'Comprobante': root_node.Comprobante}
-        engine = tenjin.Engine()
-        path = os.path.dirname(__file__)
-        template_name = 'templates/cfdi_{}.xml.tpl'.format(self.version.replace('.', '_'))
-        template_path = os.path.join(path, template_name)
-        return engine.render(template_path, context)
+    def as_xml(self, pretty_print=True):
+        Comprobante = self._as_node_object().Comprobante
+        xml_schema = {
+            'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+            'xmlns:cfdi': 'http://www.sat.gob.mx/cfd/3',
+            'xsi:schemaLocation': 'http://www.sat.gob.mx/cfd/3 http://www.sat.gob.mx/sitio_internet/cfd/3/cfdv32.xsd',
+        }
+        comprobante_node = Comprobante.as_etree_node(extra_attrs=xml_schema)
+        emisor_node = Comprobante.Emisor.as_etree_node()
+
+        if hasattr(Comprobante.Emisor, 'DomicilioFiscal'):
+            domicilio_node = Comprobante.Emisor.DomicilioFiscal.as_etree_node()
+            emisor_node.append(domicilio_node)
+        comprobante_node.append(emisor_node)
+
+        expedidoen_node = Comprobante.Emisor.ExpedidoEn.as_etree_node()
+        comprobante_node.append(expedidoen_node)
+
+        tree = ElementTree(comprobante_node)
+        f = BytesIO()
+        tree.write(f, encoding='utf-8', xml_declaration=True)
+        xml_string = f.getvalue().decode('utf-8')
+        if pretty_print:
+            xml_string = minidom.parseString(xml_string).toprettyxml(indent=' ')
+
+        return xml_string
