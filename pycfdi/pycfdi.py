@@ -98,16 +98,16 @@ class Cfdi(object):
     def __init__(self, document={}, version='3.2', *args, **kwargs):
         self.document = document
         self.version = version
-        self.schema = SchemaConstructor.get_schema(self.version)
-        self.validator = CfdiValidator()
 
-    def _validate(self):
-        self.validator.validate(self.document, self.schema)
-        normalized_document = self.validator.normalized(self.document, self.schema)
-        return self.validator.errors, normalized_document
+    def _get_validator(self):
+        validator = CfdiValidator()
+        schema = SchemaConstructor.get_schema(self.version)
+        validator.validate(self.document, schema)
+        return validator
 
     def is_valid(self):
-        self.errors, self.normalized_document = self._validate()
+        validator =self._get_validator()
+        self.errors, self.normalized_document = validator.errors, validator.normalized
         return not bool(self.errors)
 
     def _as_node_object(self):
