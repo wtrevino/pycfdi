@@ -1,4 +1,4 @@
-timestamp: 1478220823.8148942
+timestamp: 1478221157.3308816
 
 _extend=_buf.extend;_to_str=to_str;_escape=escape; _extend(('''<?xml version="1.0" encoding="UTF-8"?>
 <cfdi:Comprobante ''', _to_str(Comprobante.print_attributes()), ''' version="3.2"
@@ -21,23 +21,6 @@ _extend(('''    <cfdi:Receptor ''', _to_str(Receptor.print_attributes()), '''>
 for Concepto in Comprobante.Conceptos:
     _extend(('''        <cfdi:Concepto ''', _to_str(Concepto.print_attributes()), '''/>\n''', ));
 #endfor
-_extend(('''    </cfdi:Conceptos>\n''', ));
-Impuestos = Comprobante.Impuestos
-if hasattr(Impuestos, 'Traslados') or hasattr(Impuestos, 'Retenciones'):
-    _extend(('''    <cfdi:Impuestos ''', _to_str(Impuestos.print_attributes()), '''>\n''', ));
-    if hasattr(Impuestos, 'Retenciones'):
-        _extend(('''        <cfdi:Retenciones>\n''', ));
-        for Retencion in Impuestos.Retenciones:
-            _extend(('''            <cfdi:Retencion ''', _to_str(Retencion.print_attributes()), '''/>\n''', ));
-        #endfor
-        _extend(('''        </cfdi:Retenciones>\n''', ));
-    #endif
-    if hasattr(Impuestos, 'Traslados'):
-        _extend(('''        <cfdi:Traslados>\n''', ));
-        for Traslado in Impuestos.Traslados:
-            _extend(('''            <cfdi:Traslado ''', _to_str(Traslado.print_attributes()), '''/>\n''', ));
-        #endfor
-        _extend(('''        </cfdi:Traslados>\n''', ));
-    #endif
-#endif
-_extend(('''    </cfdi:Impuestos>\n''', ));
+_extend(('''    </cfdi:Conceptos>
+
+</cfdi:Comprobante>\n''', ));
