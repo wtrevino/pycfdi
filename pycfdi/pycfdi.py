@@ -177,10 +177,11 @@ class Cfdi(object):
             impuestos_node.append(traslados_nodes)
 
         comprobante_node.append(impuestos_node)
-        xml_string = "<?xml version='1.0' encoding='UTF-8'?>"
-        xml_string += tostring(comprobante_node).decode('utf-8')
+        xml_string = '<?xml version="1.0" encoding="utf-8"?>'
+        xml_string += tostring(comprobante_node, encoding='utf-8').decode('utf-8')
 
         if pretty_print:
-            xml_string = minidom.parseString(xml_string).toprettyxml(indent=' ')
+            xml_string = minidom.parseString(xml_string)
+            xml_string = xml_string.toprettyxml(indent=' ', encoding='utf-8').decode('utf-8')
 
         return xml_string
