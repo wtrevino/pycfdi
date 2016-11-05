@@ -1,21 +1,15 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
-
-import tenjin
-from tenjin.helpers import to_str, escape
-from xml.etree.ElementTree import ElementTree, Element, tostring
+from xml.etree.ElementTree import Element, tostring
 from xml.dom import minidom
 
 from .validator import CfdiValidator
 from .schema import SchemaConstructor
 
-from io import BytesIO
-from collections import namedtuple
-import json
 import logging
-import os
 import sys
+
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -117,34 +111,75 @@ class Cfdi(object):
             log.exception("CFDI Document not valid. Errors: \"{}\".".format(self.errors))
             raise CfdiDocumentNotValid
 
-    def as_xml(self, pretty_print=True):
+    def as_xml(self, pretty_print=False):
         Comprobante = self._as_node_object().Comprobante
         xml_schema = {
             'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
             'xmlns:cfdi': 'http://www.sat.gob.mx/cfd/3',
             'xsi:schemaLocation': 'http://www.sat.gob.mx/cfd/3 http://www.sat.gob.mx/sitio_internet/cfd/3/cfdv32.xsd',
         }
+
+        # - Comprobante
         comprobante_node = Comprobante.as_etree_node(extra_attrs=xml_schema)
+
+        # -- Emisor
         Emisor = Comprobante.Emisor
         emisor_node = Emisor.as_etree_node()
-
-        for regimen in Emisor.RegimenFiscal:
-            regimen_node = Element('RegimenFiscal')
-            regimen_node.set('Regimen', regimen.Regimen)
-            emisor_node.append(regimen_node)
-
         if hasattr(Emisor, 'DomicilioFiscal'):
             domicilio_node = Emisor.DomicilioFiscal.as_etree_node()
             emisor_node.append(domicilio_node)
+        expedidoen_node = Emisor.ExpedidoEn.as_etree_node()
+        emisor_node.append(expedidoen_node)
+        for regimen in Emisor.RegimenFiscal:
+            regimen_node = Element('cfdi:RegimenFiscal')
+            regimen_node.set('Regimen', regimen.Regimen)
+            emisor_node.append(regimen_node)
         comprobante_node.append(emisor_node)
 
-        expedidoen_node = Emisor.ExpedidoEn.as_etree_node()
-        comprobante_node.append(expedidoen_node)
+        # -- Receptor
+        Receptor = Comprobante.Receptor
+        receptor_node = Receptor.as_etree_node()
+        if hasattr(Receptor, 'Domicilio'):
+            domicilio_node = Receptor.Domicilio.as_etree_node()
+            receptor_node.append(domicilio_node)
+        comprobante_node.append(receptor_node)
 
-        tree = ElementTree(comprobante_node)
-        f = BytesIO()
-        tree.write(f, encoding='utf-8', xml_declaration=True)
-        xml_string = f.getvalue().decode('utf-8')
+        # -- Conceptos
+        conceptos_node = Element('cfdi:Conceptos')
+        for Concepto in Comprobante.Conceptos:
+            concepto_node = Concepto.as_etree_node()
+            concepto_node.tag = 'cfdi:Concepto'
+            conceptos_node.append(concepto_node)
+        comprobante_node.append(conceptos_node)
+
+        # -- Impuestos
+        Impuestos = Comprobante.Impuestos
+        impuestos_node = Impuestos.as_etree_node()
+
+        # --- Retenciones
+        if hasattr(Impuestos, 'Retenciones'):
+            Retenciones = Impuestos.Retenciones
+            retenciones_node = Element('cfdi:Retenciones')
+            for Retencion in Retenciones:
+                retencion_node = Retencion.as_etree_node()
+                retencion_node.tag = 'cfdi:Retencion'
+                retenciones_node.append(retencion_node)
+            impuestos_node.append(retenciones_node)
+
+        # --- Traslados
+        if hasattr(Impuestos, 'Traslados'):
+            Traslados = Impuestos.Traslados
+            traslados_nodes = Element('cfdi:Traslados')
+            for Traslado in Traslados:
+                traslado_node = Traslado.as_etree_node()
+                traslado_node.tag = 'cfdi:Traslado'
+                traslados_nodes.append(traslado_node)
+            impuestos_node.append(traslados_nodes)
+
+        comprobante_node.append(impuestos_node)
+        xml_string = "<?xml version='1.0' encoding='UTF-8'?>"
+        xml_string += tostring(comprobante_node).decode('utf-8')
+
         if pretty_print:
             xml_string = minidom.parseString(xml_string).toprettyxml(indent=' ')
 
