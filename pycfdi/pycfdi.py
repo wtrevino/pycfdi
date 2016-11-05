@@ -90,18 +90,18 @@ class Cfdi(object):
     '''
 
     def __init__(self, document={}, version='3.2', *args, **kwargs):
-        self.document = document
-        self.version = version
+        self._document = document
+        self._version = version
 
     def _get_validator(self):
         validator = CfdiValidator()
-        schema = SchemaConstructor.get_schema(self.version)
-        validator.validate(self.document, schema)
+        schema = SchemaConstructor.get_schema(self._version)
+        validator.validate(self._document, schema)
         return validator
 
     def is_valid(self):
         validator = self._get_validator()
-        self.errors, self.normalized = validator.errors, validator.normalized(self.document)
+        self.errors, self.normalized = validator.errors, validator.normalized(self._document)
         return not bool(self.errors)
 
     def _as_node_object(self):
@@ -149,6 +149,10 @@ class Cfdi(object):
         for Concepto in Comprobante.Conceptos:
             concepto_node = Concepto.as_etree_node()
             concepto_node.tag = 'cfdi:Concepto'
+            if hasattr(Concepto, 'CuentaPredial'):
+                CuentaPredial = Concepto.CuentaPredial
+                cuenta_predial_node = CuentaPredial.as_etree_node()
+                concepto_node.append(cuenta_predial_node)
             conceptos_node.append(concepto_node)
         comprobante_node.append(conceptos_node)
 

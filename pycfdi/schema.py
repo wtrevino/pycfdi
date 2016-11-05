@@ -283,7 +283,8 @@ class SchemaConstructor(object):
                                     'numero': {
                                         'type': 'string',
                                         'minlength': 1,
-                                        'required': True
+                                        'required': True,
+                                        'coerce': str
                                     }
                                 }
                             },
