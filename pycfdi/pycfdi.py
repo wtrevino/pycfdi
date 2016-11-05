@@ -106,7 +106,7 @@ class Cfdi(object):
         return validator
 
     def is_valid(self):
-        validator =self._get_validator()
+        validator = self._get_validator()
         self.errors, self.normalized = validator.errors, validator.normalized(self.document)
         return not bool(self.errors)
 
@@ -125,14 +125,20 @@ class Cfdi(object):
             'xsi:schemaLocation': 'http://www.sat.gob.mx/cfd/3 http://www.sat.gob.mx/sitio_internet/cfd/3/cfdv32.xsd',
         }
         comprobante_node = Comprobante.as_etree_node(extra_attrs=xml_schema)
-        emisor_node = Comprobante.Emisor.as_etree_node()
+        Emisor = Comprobante.Emisor
+        emisor_node = Emisor.as_etree_node()
 
-        if hasattr(Comprobante.Emisor, 'DomicilioFiscal'):
-            domicilio_node = Comprobante.Emisor.DomicilioFiscal.as_etree_node()
+        for regimen in Emisor.RegimenFiscal:
+            regimen_node = Element('RegimenFiscal')
+            regimen_node.set('Regimen', regimen.Regimen)
+            emisor_node.append(regimen_node)
+
+        if hasattr(Emisor, 'DomicilioFiscal'):
+            domicilio_node = Emisor.DomicilioFiscal.as_etree_node()
             emisor_node.append(domicilio_node)
         comprobante_node.append(emisor_node)
 
-        expedidoen_node = Comprobante.Emisor.ExpedidoEn.as_etree_node()
+        expedidoen_node = Emisor.ExpedidoEn.as_etree_node()
         comprobante_node.append(expedidoen_node)
 
         tree = ElementTree(comprobante_node)

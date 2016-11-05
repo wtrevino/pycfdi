@@ -193,11 +193,15 @@ class SchemaConstructor(object):
                             'schema': self.get_Ubicacion_schema(cfdi_version),
                         },
                         'RegimenFiscal': {
-                            'type': ['string', 'list'],
-                            'required': True,
+                            'type': 'list',
                             'minlength': 1,
+                            'required': True,
                             'schema': {
-                                'type': 'string',
+                                'Regimen': {
+                                    'type': 'string',
+                                    'minlength': 1,
+                                    'required': True,
+                                }
                             }
                         },
                         'rfc': {
