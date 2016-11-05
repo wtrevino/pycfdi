@@ -196,11 +196,15 @@ class SchemaConstructor(object):
                             'type': 'list',
                             'minlength': 1,
                             'required': True,
+                            'coerce': 'regimen',
                             'schema': {
-                                'Regimen': {
-                                    'type': 'string',
-                                    'minlength': 1,
-                                    'required': True,
+                                'type': 'dict',
+                                'schema': {
+                                    'Regimen': {
+                                        'type': 'string',
+                                        'minlength': 1,
+                                        'required': True,
+                                    }
                                 }
                             }
                         },

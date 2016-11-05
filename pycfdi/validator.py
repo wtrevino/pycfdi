@@ -58,3 +58,12 @@ class CfdiValidator(Validator):
             return True
         except ValueError:
             return False
+
+    def _normalize_coerce_regimen(self, value):
+        try:
+            if not isinstance(value, list):
+                value = ['{}'.format(value)]
+            coerce_regimen = lambda v: [{'Regimen': r} for r in v]
+            return coerce_regimen(value)
+        except Exception as e:
+            self._error(field, errors.COERCION_FAILED, e)
