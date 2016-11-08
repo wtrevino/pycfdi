@@ -48,6 +48,7 @@ class SchemaConstructor(object):
                 'pais': {
                     'type': 'string',
                     'minlength': 1,
+                    'required': True,
                 },
                 'codigoPostal': {
                     'type': 'mx_zipcode',
