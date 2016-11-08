@@ -41,7 +41,7 @@ setup(
     install_requires=requirements,
     license="MIT license",
     zip_safe=False,
-    keywords=['pycfdi', 'cfdi', 'cfdi sat', 'cfdi comprobante', 'cfdi nómina', 'facturación electrónica', 'e-invoicing',]
+    keywords=['pycfdi', 'cfdi', 'cfdi sat', 'cfdi comprobante', 'cfdi nómina', 'facturación electrónica', 'e-invoicing', ],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
