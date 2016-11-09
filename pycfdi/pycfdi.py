@@ -6,7 +6,7 @@ from xml.dom import minidom
 
 from .validator import CfdiValidator
 from .schema import SchemaConstructor
-from .xml import XmlBuilder
+from .xml_utils import XmlBuilder
 
 import logging
 import sys
