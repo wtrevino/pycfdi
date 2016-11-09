@@ -9,6 +9,8 @@ from .schema import SchemaConstructor
 from .xml_utils import CfdiNode, XmlBuilder
 
 import logging
+import os
+import subprocess
 import sys
 
 
@@ -20,16 +22,23 @@ class CfdiDocumentNotValid(Exception):
     pass
 
 
+class InvalidCertificateError(Exception):
+    pass
+
+
+class InvalidEncodedCertificateError(Exception):
+    pass
+
+
 class Cfdi(object):
     '''
     '''
 
-    def __init__(self, document={}, version='3.2', key_path=None, cer_path=None, key_pem_path=None):
+    def __init__(self, document={}, version='3.2', cer_filepath=None, pem_filepath=None):
         self.document = document
         self.version = version
-        self.key_path = key_path
-        self.cer_path = key_path
-        self.key_pem_path = key_pem_path
+        self.cer_filepath = cer_filepath
+        self.pem_filepath = pem_filepath
 
     def _get_validator(self):
         validator = CfdiValidator()
@@ -48,6 +57,17 @@ class Cfdi(object):
         else:
             log.exception("CFDI Document not valid. Errors: \"{}\".".format(self.errors))
             raise CfdiDocumentNotValid
+
+    def _get_base64_certificate(self):
+        if not self.cer_filepath or not os.path.isfile(self.cer_filepath):
+            log.exception("Certificate (.cer) file does not exist or is not set.")
+            raise InvalidCertificateError
+
+        command = 'openssl enc -base64 -in "{}"'.format(self.cer_filepath)
+        output = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+        output = output.stdout.read()
+        output = ''.join([line.decode() for line in output.split()])
+        return output
 
     def as_etree_node(self):
         Comprobante = self._as_cfdi_node().Comprobante
