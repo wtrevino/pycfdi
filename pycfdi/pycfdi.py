@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
-from xml.etree.ElementTree import Element, tostring
+from xml.etree.ElementTree import tostring
 from xml.dom import minidom
 
 from .validator import CfdiValidator
 from .schema import SchemaConstructor
-from .xml_utils import XmlBuilder
+from .xml_utils import CfdiNode, XmlBuilder
 
 import logging
 import sys
@@ -18,72 +18,6 @@ log = logging.getLogger(__name__)
 
 class CfdiDocumentNotValid(Exception):
     pass
-
-
-class CfdiNode:
-    '''
-    '''
-    def __init__(self, tag='', **kwargs):
-        self.__dict__.update(kwargs)
-        self.__namespace__ = kwargs.get('_namespace', 'cfdi')
-        self.__tag__ = tag
-        for k, v in self.__dict__.items():
-            if isinstance(v, dict):
-                setattr(self, k, CfdiNode(tag=k, **v))
-            if isinstance(v, list):
-                setattr(self, k, [CfdiNode(**i) for i in v])
-
-    @staticmethod
-    def _as_dict(obj):
-        if not hasattr(obj, '__dict__'):
-            return obj
-        result = {}
-        for k, v in obj.__dict__.items():
-            if k.startswith('_'):
-                continue
-            element = []
-            if isinstance(v, list):
-                for item in v:
-                    element.append(CfdiNode._as_dict(item))
-            else:
-                element = CfdiNode._as_dict(v)
-            result[k] = element
-        return result
-
-    def as_dict(self):
-        return CfdiNode._as_dict(self)
-
-    def get_attr(self, attr):
-        if hasattr(self, attr):
-            return ' {}="{}"'.format(attr, getattr(self, attr))
-        return ''
-
-    def print_attributes(self):
-        output = ''
-        for k, v in self.as_dict().items():
-            if type(v) not in (dict, list):
-                output += '{}="{}" '.format(k, v)
-        return output.strip()
-
-    def get_attributes(self):
-        attributes = {}
-        for k, v in self.as_dict().items():
-            if k.startswith('_'):
-                continue
-            if type(v) in (dict, list):
-                continue
-            attributes[k] = v
-        return attributes
-
-    def as_etree_node(self, extra_attrs={}):
-        tag = '{}:{}'.format(self.__namespace__, self.__tag__)
-        attributes = self.get_attributes()
-        attributes.update(extra_attrs)
-        element = Element(tag)
-        for k, v in attributes.items():
-            value = '{}'.format(v)
-            element.set(k, value)
-        return element
 
 
 class Cfdi(object):
@@ -116,16 +50,14 @@ class Cfdi(object):
             raise CfdiDocumentNotValid
 
     def as_etree_node(self):
-        root_node = self._as_node_object().Comprobante
-        etree_builder = EtreeBuilder(root_node, self.version)
-        return etree_builder.build()
-
-    def as_xml(self, pretty_print=False):
         Comprobante = self._as_node_object().Comprobante
         xml_builder = XmlBuilder(Comprobante)
         version = self.version.replace('.', '_')
         builder_func = getattr(xml_builder, 'get_cfdi_{}'.format(version))
-        comprobante_node = builder_func()
+        return builder_func()
+
+    def as_xml(self, pretty_print=False):
+        comprobante_node = self.as_etree_node()
 
         xml_string = '<?xml version="1.0" encoding="utf-8"?>'
         xml_string += tostring(comprobante_node, encoding='utf-8').decode('utf-8')
