@@ -155,7 +155,6 @@ class XmlBuilder(object):
 
         comprobante_node.append(impuestos_node)
 
-
         # Add schemas
         for k, v in xml_schemas.items():
             comprobante_node.set(k, ' '.join(v))

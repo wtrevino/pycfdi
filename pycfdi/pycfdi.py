@@ -42,7 +42,7 @@ class Cfdi(object):
         self.errors, self.normalized = validator.errors, validator.normalized(self.document)
         return not bool(self.errors)
 
-    def _as_node_object(self):
+    def _as_cfdi_node(self):
         if self.is_valid():
             return CfdiNode(**self.normalized)
         else:
@@ -50,7 +50,7 @@ class Cfdi(object):
             raise CfdiDocumentNotValid
 
     def as_etree_node(self):
-        Comprobante = self._as_node_object().Comprobante
+        Comprobante = self._as_cfdi_node().Comprobante
         xml_builder = XmlBuilder(Comprobante)
         version = self.version.replace('.', '_')
         builder_func = getattr(xml_builder, 'get_cfdi_{}'.format(version))
@@ -58,12 +58,9 @@ class Cfdi(object):
 
     def as_xml(self, pretty_print=False):
         comprobante_node = self.as_etree_node()
-
         xml_string = '<?xml version="1.0" encoding="utf-8"?>'
         xml_string += tostring(comprobante_node, encoding='utf-8').decode('utf-8')
-
         if pretty_print:
             xml_string = minidom.parseString(xml_string)
             xml_string = xml_string.toprettyxml(indent=' ', encoding='utf-8').decode('utf-8')
-
         return xml_string
