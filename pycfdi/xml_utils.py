@@ -4,7 +4,7 @@ from __future__ import absolute_import
 from xml.etree.ElementTree import Element
 
 
-class CfdiNode:
+class CfdiNode(object):
     '''
     '''
     def __init__(self, tag='', **kwargs):

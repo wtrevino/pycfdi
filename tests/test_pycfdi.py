@@ -16,9 +16,14 @@ from click.testing import CliRunner
 from pycfdi import pycfdi
 from pycfdi import cli
 
-from .utils import SAMPLE_CFDI_DOC
+from .utils import SAMPLE_CFDI_DOC, SAMPLE_BASE64_CERT
 
+import os
 import random
+
+
+__location__ = os.path.realpath(
+    os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 
 @pytest.fixture
@@ -79,7 +84,14 @@ def test_certificate_invalid():
     with pytest.raises(pycfdi.InvalidCertificateError) as excinfo:
         cfdi._get_base64_certificate()
 
-
+def test_certificate_valid():
+    '''
+        Assert a certificate valid and correct
+    '''
+    base64_cert = ''.join(SAMPLE_BASE64_CERT.split())
+    cer_filepath = os.path.join(__location__, 'sample_data/certificates/AAA010101AAA.cer')
+    cfdi = pycfdi.Cfdi(SAMPLE_CFDI_DOC, cer_filepath=cer_filepath)
+    assert cfdi._get_base64_certificate() == base64_cert, 'CFDI should be invalid'
 
 def test_command_line_interface():
-    assert 0 == 0
+    pass
