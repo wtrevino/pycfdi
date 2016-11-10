@@ -91,7 +91,7 @@ def test_certificate_valid():
     base64_cert = ''.join(SAMPLE_BASE64_CERT.split())
     cer_filepath = os.path.join(__location__, 'sample_data/certificates/AAA010101AAA.cer')
     cfdi = pycfdi.Cfdi(SAMPLE_CFDI_DOC, cer_filepath=cer_filepath)
-    assert cfdi._get_base64_certificate() == base64_cert, 'CFDI should be invalid'
+    assert cfdi._get_base64_certificate() == base64_cert, 'Certificate should be invalid'
 
 def test_command_line_interface():
     pass
