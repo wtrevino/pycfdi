@@ -12,6 +12,7 @@ with open('HISTORY.rst') as history_file:
 requirements = [
     'Click>=6.0',
     'Cerberus==1.0.1',
+    'lxml',
 ]
 
 test_requirements = [
