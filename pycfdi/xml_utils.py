@@ -100,8 +100,7 @@ class XmlBuilder(object):
         }
 
         # - Comprobante
-        comprobante_extra_attrs = {'certificado': '', 'sello': ''}
-        comprobante_node = self.root_node.as_etree_node(extra_attrs=comprobante_extra_attrs)
+        comprobante_node = self.root_node.as_etree_node()
 
         # -- Emisor
         Emisor = self.root_node.Emisor

@@ -93,7 +93,6 @@ class Cfdi(object):
         output = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
         output = output.stdout.read()
         os.remove(cadena_original_path)
-
         return output
 
     def as_etree_node(self):
@@ -103,7 +102,9 @@ class Cfdi(object):
         builder_func = getattr(xml_builder, 'get_cfdi_{}'.format(version))
         return builder_func()
 
-    def as_xml(self, declare_encoding=True, pretty_print=False):
+    def as_xml(self, declare_encoding=True, pretty_print=False, stamp=False):
+        if stamp:
+            self.stamp()
         comprobante_node = self.as_etree_node()
         xml_string = '<?xml version="1.0" encoding="utf-8"?>' if declare_encoding else ''
         xml_string += tostring(comprobante_node, encoding='utf-8').decode('utf-8')
@@ -111,3 +112,10 @@ class Cfdi(object):
             xml_string = minidom.parseString(xml_string)
             xml_string = xml_string.toprettyxml(indent=' ', encoding='utf-8').decode('utf-8')
         return xml_string
+
+    def stamp(self, pretty_print=False):
+        self.document['Comprobante']['certificado'] = self._get_base64_certificate()
+        version = self.version.replace('.', '_')
+        sello_func = getattr(self, '_get_stamp_{}'.format(version))
+        sello = sello_func()
+        self.document['Comprobante']['sello'] = sello.decode()

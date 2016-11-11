@@ -96,6 +96,8 @@ class SchemaConstructor(object):
         cfdi_version = self.get_cfdi_version(cfdi_version)
         _versions = {
             '3.2': {
+                'sello' : {'type': 'string'},
+                'certificado' : {'type': 'string'},
                 'serie': {
                     'type': 'alphanumeric',
                     'minlength': 1,
