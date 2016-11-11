@@ -32,15 +32,20 @@ class InvalidKeyPemError(Exception):
     pass
 
 
+class InvalidCerPemError(Exception):
+    pass
+
+
 class Cfdi(object):
     '''
     '''
 
-    def __init__(self, document={}, version='3.2', cer_filepath=None, pem_filepath=None):
+    def __init__(self, document={}, version='3.2', cer_filepath=None, cerpem_filepath=None, keypem_filepath=None):
         self.document = document
         self.version = version
         self.cer_filepath = cer_filepath
-        self.pem_filepath = pem_filepath
+        self.cerpem_filepath = cerpem_filepath
+        self.keypem_filepath = keypem_filepath
 
     def _get_validator(self):
         validator = CfdiValidator()
@@ -60,6 +65,19 @@ class Cfdi(object):
             err_message = "CFDI Document not valid."
             log.exception(err_message)
             raise CfdiDocumentNotValid
+
+    def _get_serial(self):
+        if not self.cerpem_filepath or not os.path.isfile(self.cerpem_filepath):
+            err_message = "Certificate (usually a .cer.pem file) does not exist or it has not been set."
+            log.exception(err_message)
+            raise InvalidCerPemError
+
+        command = 'openssl x509 -in "{}" -serial -noout'.format(self.cerpem_filepath)
+        output = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+        output = output.stdout.read().decode()
+        output = output.replace('serial=', '').strip()
+        output = zip(*(iter(output), ) * 2)
+        return ''.join([i[1] for i in output])
 
     def _get_base64_certificate(self):
         if not self.cer_filepath or not os.path.isfile(self.cer_filepath):
@@ -81,15 +99,15 @@ class Cfdi(object):
         return transform(dom)
 
     def _get_stamp_3_2(self):
-        if not self.pem_filepath or not os.path.isfile(self.pem_filepath):
-            err_message = "Private key (usually a .pem or .key.pem file) does not exist or it has not been set."
+        if not self.keypem_filepath or not os.path.isfile(self.keypem_filepath):
+            err_message = "Private key (usually a .key.pem file) does not exist or it has not been set."
             log.exception(err_message)
             raise InvalidKeyPemError
 
         cadena_original, cadena_original_path = tempfile.mkstemp()
         os.write(cadena_original, self._get_cadena_original())
-        command = 'cat "{cadena_original_path}" | openssl dgst -sha1 -sign "{pem_filepath}" | openssl enc -base64 -A'
-        command = command.format(cadena_original_path=cadena_original_path, pem_filepath=self.pem_filepath)
+        command = 'cat "{cadena_original_path}" | openssl dgst -sha1 -sign "{keypem_filepath}" | openssl enc -base64 -A'
+        command = command.format(cadena_original_path=cadena_original_path, keypem_filepath=self.keypem_filepath)
         output = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
         output = output.stdout.read()
         os.remove(cadena_original_path)
@@ -114,6 +132,7 @@ class Cfdi(object):
         return xml_string
 
     def stamp(self, pretty_print=False):
+        self.document['Comprobante']['noCertificado'] = self._get_serial()
         self.document['Comprobante']['certificado'] = self._get_base64_certificate()
         version = self.version.replace('.', '_')
         sello_func = getattr(self, '_get_stamp_{}'.format(version))
