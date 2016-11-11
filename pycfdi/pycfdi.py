@@ -92,8 +92,8 @@ class Cfdi(object):
         return output
 
     def _get_cadena_original(self):
-        xml_string = self.as_xml(declare_encoding=False)
-        dom = etree.fromstring(xml_string)
+        xml_string = self.as_xml(pretty_print=True)
+        dom = etree.fromstring(bytes(xml_string, encoding='utf-8'))
         xslt = etree.parse(CADENA_ORIGINAL_3_2_PATH)
         transform = etree.XSLT(xslt)
         return transform(dom)
@@ -110,6 +110,7 @@ class Cfdi(object):
         command = command.format(cadena_original_path=cadena_original_path, keypem_filepath=self.keypem_filepath)
         output = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
         output = output.stdout.read()
+        #from ipdb import set_trace;set_trace()
         os.remove(cadena_original_path)
         return output
 

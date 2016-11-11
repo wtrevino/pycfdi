@@ -108,6 +108,11 @@ class SchemaConstructor(object):
                     'type': 'string',
                     'default': '',
                 },
+                'version': {
+                    'type': 'string',
+                    'default': '3.2',
+                    'allowed': ['3.2', ],
+                },
                 'serie': {
                     'type': 'alphanumeric',
                     'minlength': 1,
