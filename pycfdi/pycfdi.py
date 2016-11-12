@@ -92,11 +92,13 @@ class Cfdi(object):
         return output
 
     def _get_cadena_original(self):
-        xml_string = self.as_xml(pretty_print=True)
-        dom = etree.fromstring(bytes(xml_string, encoding='utf-8'))
+        xml_string = self.as_xml()
+        xml_file, xml_path = tempfile.mkstemp()
+        os.write(xml_file, bytes(xml_string, 'utf-8'))
+        dom = etree.parse(xml_path)
         xslt = etree.parse(CADENA_ORIGINAL_3_2_PATH)
         transform = etree.XSLT(xslt)
-        return transform(dom)
+        return str(transform(dom))
 
     def _get_stamp_3_2(self):
         if not self.keypem_filepath or not os.path.isfile(self.keypem_filepath):
@@ -105,12 +107,11 @@ class Cfdi(object):
             raise InvalidKeyPemError
 
         cadena_original, cadena_original_path = tempfile.mkstemp()
-        os.write(cadena_original, self._get_cadena_original())
+        os.write(cadena_original, bytes(self._get_cadena_original(), 'utf-8'))
         command = 'cat "{cadena_original_path}" | openssl dgst -sha1 -sign "{keypem_filepath}" | openssl enc -base64 -A'
         command = command.format(cadena_original_path=cadena_original_path, keypem_filepath=self.keypem_filepath)
         output = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
         output = output.stdout.read()
-        #from ipdb import set_trace;set_trace()
         os.remove(cadena_original_path)
         return output
 
