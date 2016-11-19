@@ -262,6 +262,11 @@ class SchemaConstructor(object):
                     'schema': {
                         'type': 'dict',
                         'schema': {
+                            '_tag': {
+                                'type': 'string',
+                                'allowed': ['Concepto', ],
+                                'default': 'Concepto',
+                            },
                             'cantidad': {
                                 'type': 'number',
                                 'required': True,
@@ -332,6 +337,11 @@ class SchemaConstructor(object):
                             'schema': {
                                 'type': 'dict',
                                 'schema': {
+                                    '_tag': {
+                                        'type': 'string',
+                                        'allowed': ['Retencion', ],
+                                        'default': 'Retencion',
+                                    },
                                     'impuesto': {
                                         'type': 'string',
                                         'allowed': ['IVA', 'ISR'],
@@ -351,6 +361,11 @@ class SchemaConstructor(object):
                             'schema': {
                                 'type': 'dict',
                                 'schema': {
+                                    '_tag': {
+                                        'type': 'string',
+                                        'allowed': ['Traslado', ],
+                                        'default': 'Traslado',
+                                    },
                                     'impuesto': {
                                         'type': 'string',
                                         'allowed': ['IVA', 'IEPS'],

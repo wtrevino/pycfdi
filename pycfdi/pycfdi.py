@@ -62,7 +62,7 @@ class Cfdi(object):
         if self.is_valid():
             return CfdiNode(**self.normalized)
         else:
-            err_message = "CFDI Document not valid."
+            err_message = "CFDI Document not valid. {}".format(self.errors)
             log.exception(err_message)
             raise CfdiDocumentNotValid
 
@@ -124,7 +124,9 @@ class Cfdi(object):
 
     def as_xml(self, declare_encoding=True, pretty_print=False, stamp=False):
         if stamp:
-            self.stamp()
+            version = self.version.replace('.', '_')
+            stamp_func = getattr(self, 'stamp_{}'.format(version))
+            stamp_func()
         comprobante_node = self.as_etree_node()
         xml_string = '<?xml version="1.0" encoding="utf-8"?>' if declare_encoding else ''
         xml_string += tostring(comprobante_node, encoding='utf-8').decode('utf-8')
@@ -133,7 +135,7 @@ class Cfdi(object):
             xml_string = xml_string.toprettyxml(indent=' ', encoding='utf-8').decode('utf-8')
         return xml_string
 
-    def stamp(self, pretty_print=False):
+    def stamp_3_2(self, pretty_print=False):
         self.document['Comprobante']['noCertificado'] = self._get_serial()
         self.document['Comprobante']['certificado'] = self._get_base64_certificate()
         version = self.version.replace('.', '_')

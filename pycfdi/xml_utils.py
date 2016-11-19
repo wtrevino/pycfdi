@@ -18,7 +18,8 @@ class CfdiNode(object):
     def __init__(self, tag='', **kwargs):
         self.__dict__.update(kwargs)
         self.__namespace__ = kwargs.get('_namespace', 'cfdi')
-        self.__tag__ = tag
+        self.__tag__ = kwargs.get('_tag', tag)
+        self.__order__ = int(kwargs.get('_order', 0))
         for k, v in self.__dict__.items():
             if isinstance(v, dict):
                 setattr(self, k, CfdiNode(tag=k, **v))
@@ -29,6 +30,7 @@ class CfdiNode(object):
     def _as_dict(obj):
         if not hasattr(obj, '__dict__'):
             return obj
+
         result = {}
         for k, v in obj.__dict__.items():
             if k.startswith('_'):
@@ -66,6 +68,49 @@ class CfdiNode(object):
                 continue
             attributes[k] = v
         return attributes
+
+    def get_children(self):
+        children = {}
+        for k, v in self.as_dict().items():
+            if k.startswith('as_'):
+                continue
+            if k.startswith('get_'):
+                continue
+            if k.startswith('print_'):
+                continue
+            if type(v) not in (dict, list):
+                continue
+
+            children[k] = v
+        return children
+
+
+    @staticmethod
+    def _as_etree_node(obj, extra_attrs={}):
+        if not hasattr(obj, '__dict__'):
+            return obj
+        tag = '{}:{}'.format(obj.__namespace__, obj.__tag__)
+        attributes = obj.get_attributes()
+        attributes.update(extra_attrs)
+        children = obj.get_children()
+        element = Element(tag)
+        for k, v in attributes.items():
+            value = '{}'.format(v)
+            element.set(k, value)
+        for k, v in children.items():
+            if isinstance(v, list):
+                v = sorted(v, key=lambda k: k.get('_order', 0))
+                items = getattr(obj, k)
+                for item in items:
+                    element.append(obj._as_etree_node(item))
+            else:
+                child = getattr(obj, k)
+                element.append(obj._as_etree_node(child))
+
+        return element
+
+    def as_etree_node_recursive(self, extra_attrs={}):
+        return self._as_etree_node(self)
 
     def as_etree_node(self, extra_attrs={}):
         tag = '{}:{}'.format(self.__namespace__, self.__tag__)
@@ -128,7 +173,6 @@ class XmlBuilder(object):
         conceptos_node = Element('cfdi:Conceptos')
         for Concepto in self.root_node.Conceptos:
             concepto_node = Concepto.as_etree_node()
-            concepto_node.tag = 'cfdi:Concepto'
             if hasattr(Concepto, 'CuentaPredial'):
                 CuentaPredial = Concepto.CuentaPredial
                 cuenta_predial_node = CuentaPredial.as_etree_node()
@@ -146,7 +190,6 @@ class XmlBuilder(object):
             retenciones_node = Element('cfdi:Retenciones')
             for Retencion in Retenciones:
                 retencion_node = Retencion.as_etree_node()
-                retencion_node.tag = 'cfdi:Retencion'
                 retenciones_node.append(retencion_node)
             impuestos_node.append(retenciones_node)
 
@@ -156,11 +199,39 @@ class XmlBuilder(object):
             traslados_nodes = Element('cfdi:Traslados')
             for Traslado in Traslados:
                 traslado_node = Traslado.as_etree_node()
-                traslado_node.tag = 'cfdi:Traslado'
                 traslados_nodes.append(traslado_node)
             impuestos_node.append(traslados_nodes)
 
         comprobante_node.append(impuestos_node)
+
+        # --Complemento
+        if hasattr(self.root_node, 'Complemento'):
+            Complemento = self.root_node.Complemento
+            complemento_node = Complemento.as_etree_node()
+
+            # Nomina
+            nomina_version = None
+            has_nomina = hasattr(Complemento, 'Nomina')
+            if has_nomina:
+                nomina_version = Complemento.Nomina.Version
+
+            # Nomina 1.1
+            if has_nomina and nomina_version == '1.1':
+                Nomina = Complemento.Nomina
+                nomina_node = Nomina.as_etree_node()
+                if hasattr(Nomina, 'Percepciones'):
+                    Percepciones = Nomina.Percepciones
+                    percepciones_node = Percepciones.as_etree_node_recursive()
+                if hasattr(Nomina, 'Deducciones'):
+                    Deducciones = Nomina.Deducciones
+                    deducciones_node = Deducciones.as_etree_node_recursive()
+                nomina_node.append(percepciones_node)
+                nomina_node.append(deducciones_node)
+                complemento_node.append(nomina_node)
+
+            if len(complemento_node.getchildren()) > 0:
+                comprobante_node.append(complemento_node)
+
 
         # Add schemas
         for k, v in xml_schemas.items():
