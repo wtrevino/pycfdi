@@ -131,7 +131,7 @@ class XmlBuilder(object):
 
 
     def get_cfdi_3_2(self):
-        xml_schemas = {
+        xml_schema_data = {
             'xmlns:xsi': [
                 'http://www.w3.org/2001/XMLSchema-instance',
             ],
@@ -147,6 +147,10 @@ class XmlBuilder(object):
         # - Comprobante
         comprobante_node = self.root_node.as_etree_node()
 
+        # Add schema data
+        for k, v in xml_schema_data.items():
+            comprobante_node.set(k, ' '.join(v))
+
         # -- Emisor
         Emisor = self.root_node.Emisor
         emisor_node = Emisor.as_etree_node()
@@ -155,9 +159,8 @@ class XmlBuilder(object):
             emisor_node.append(domicilio_node)
         expedidoen_node = Emisor.ExpedidoEn.as_etree_node()
         emisor_node.append(expedidoen_node)
-        for regimen in Emisor.RegimenFiscal:
-            regimen_node = Element('cfdi:RegimenFiscal')
-            regimen_node.set('Regimen', regimen.Regimen)
+        for RegimenFiscal in Emisor.RegimenFiscal:
+            regimen_node = RegimenFiscal.as_etree_node_recursive()
             emisor_node.append(regimen_node)
         comprobante_node.append(emisor_node)
 
@@ -204,10 +207,37 @@ class XmlBuilder(object):
 
         comprobante_node.append(impuestos_node)
 
-        # --Complemento
+        # -- Complemento
         if hasattr(self.root_node, 'Complemento'):
             Complemento = self.root_node.Complemento
             complemento_node = Complemento.as_etree_node()
+
+            # Impuestos locales
+            implocales_version = None
+            has_implocales = hasattr(Complemento, 'ImpuestosLocales')
+            if has_implocales:
+                implocales_version = Complemento.ImpuestosLocales.version
+
+            # Impuestos locales 1.0
+            if has_implocales and implocales_version == '1.0':
+                ImpuestosLocales = Complemento.ImpuestosLocales
+                implocales_node = ImpuestosLocales.as_etree_node()
+
+                if hasattr(ImpuestosLocales, 'traslados'):
+                    for traslado in ImpuestosLocales.traslados:
+                        implocales_node.append(traslado.as_etree_node())
+
+                if hasattr(ImpuestosLocales, 'retenciones'):
+                    for retencion in ImpuestosLocales.retenciones:
+                        implocales_node.append(retencion.as_etree_node())
+
+                complemento_node.append(implocales_node)
+
+            # Donatarias - TODO
+            # Complemento vehiculo - TODO
+            # Servicios parciales constr. - TODO
+            # Declarar divisas - TODO
+            # Complemento INE - TODO
 
             # Nomina
             nomina_version = None
@@ -222,19 +252,14 @@ class XmlBuilder(object):
                 if hasattr(Nomina, 'Percepciones'):
                     Percepciones = Nomina.Percepciones
                     percepciones_node = Percepciones.as_etree_node_recursive()
+                    nomina_node.append(percepciones_node)
                 if hasattr(Nomina, 'Deducciones'):
                     Deducciones = Nomina.Deducciones
                     deducciones_node = Deducciones.as_etree_node_recursive()
-                nomina_node.append(percepciones_node)
-                nomina_node.append(deducciones_node)
+                    nomina_node.append(deducciones_node)
                 complemento_node.append(nomina_node)
 
             if len(complemento_node.getchildren()) > 0:
                 comprobante_node.append(complemento_node)
-
-
-        # Add schemas
-        for k, v in xml_schemas.items():
-            comprobante_node.set(k, ' '.join(v))
 
         return comprobante_node

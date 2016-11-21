@@ -2,7 +2,7 @@
 
 from __future__ import absolute_import
 
-from cerberus import Validator
+from cerberus import Validator, errors
 
 from datetime import datetime
 import logging

@@ -218,6 +218,11 @@ class SchemaConstructor(object):
                             'schema': {
                                 'type': 'dict',
                                 'schema': {
+                                    '_tag': {
+                                        'type': 'string',
+                                        'allowed': ['RegimenFiscal', ],
+                                        'default': 'RegimenFiscal',
+                                    },
                                     'Regimen': {
                                         'type': 'string',
                                         'minlength': 1,
