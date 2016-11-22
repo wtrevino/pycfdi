@@ -212,13 +212,13 @@ class XmlBuilder(object):
             Complemento = self.root_node.Complemento
             complemento_node = Complemento.as_etree_node()
 
-            # Impuestos locales
+            # --- Impuestos locales
             implocales_version = None
             has_implocales = hasattr(Complemento, 'ImpuestosLocales')
             if has_implocales:
                 implocales_version = Complemento.ImpuestosLocales.version
 
-            # Impuestos locales 1.0
+            # ----- Impuestos locales 1.0
             if has_implocales and implocales_version == '1.0':
                 ImpuestosLocales = Complemento.ImpuestosLocales
                 implocales_node = ImpuestosLocales.as_etree_node()
@@ -233,19 +233,29 @@ class XmlBuilder(object):
 
                 complemento_node.append(implocales_node)
 
-            # Donatarias - TODO
+            # --- Donatarias
+            donatarias_version = None
+            has_donatarias = hasattr(Complemento, 'Donatarias')
+            if has_donatarias:
+                donatarias_version = Complemento.Donatarias.version
+
+            # ---- Donatarias 1.1
+            if has_donatarias and donatarias_version == '1.1':
+                Donatarias = Complemento.Donatarias
+                complemento_node.append(Donatarias.as_etree_node())
+
             # Complemento vehiculo - TODO
             # Servicios parciales constr. - TODO
             # Declarar divisas - TODO
             # Complemento INE - TODO
 
-            # Nomina
+            # --- Nomina
             nomina_version = None
             has_nomina = hasattr(Complemento, 'Nomina')
             if has_nomina:
                 nomina_version = Complemento.Nomina.Version
 
-            # Nomina 1.1
+            # ---- Nomina 1.1
             if has_nomina and nomina_version == '1.1':
                 Nomina = Complemento.Nomina
                 nomina_node = Nomina.as_etree_node()
