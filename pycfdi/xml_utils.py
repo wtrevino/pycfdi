@@ -222,6 +222,8 @@ class XmlBuilder(object):
             if has_implocales and implocales_version == '1.0':
                 ImpuestosLocales = Complemento.ImpuestosLocales
                 implocales_node = ImpuestosLocales.as_etree_node()
+                implocales_node.set('xmlns:implocal', 'http://www.sat.gob.mx/implocal')
+                implocales_node.set('xsi:schemaLocation', 'http://www.sat.gob.mx/implocal http://www.sat.gob.mx/sitio_internet/cfd/implocal/implocal.xsd')
 
                 if hasattr(ImpuestosLocales, 'traslados'):
                     for traslado in ImpuestosLocales.traslados:
@@ -242,7 +244,10 @@ class XmlBuilder(object):
             # ---- Donatarias 1.1
             if has_donatarias and donatarias_version == '1.1':
                 Donatarias = Complemento.Donatarias
-                complemento_node.append(Donatarias.as_etree_node())
+                donatarias_node = Donatarias.as_etree_node()
+                donatarias_node.set('xmlns:donat', 'http://www.sat.gob.mx/donat')
+                donatarias_node.set('xsi:schemaLocation', 'http://www.sat.gob.mx/donat http://www.sat.gob.mx/sitio_internet/cfd/donat/donat11.xsd')
+                complemento_node.append(donatarias_node)
 
             # --- Complemento vehiculo
             vehiculousado_version = None
@@ -258,7 +263,23 @@ class XmlBuilder(object):
                 vehiculousado_node.set('xsi:schemaLocation', 'http://www.sat.gob.mx/vehiculousado http://www.sat.gob.mx/sitio_internet/cfd/vehiculousado/vehiculousado.xsd')
                 complemento_node.append(vehiculousado_node)
 
-            # Servicios parciales constr. - TODO
+            # --- Servicios parciales constr.
+            serviciosparciales_version = None
+            has_serviciosparciales = hasattr(Complemento, 'parcialesconstruccion')
+            if has_serviciosparciales:
+                serviciosparciales_version = Complemento.parcialesconstruccion.Version
+
+            # ---- Servicios parciales constr. 1.0
+            if has_serviciosparciales and serviciosparciales_version == '1.0':
+                parcialesconstruccion = Complemento.parcialesconstruccion
+                parcialesconstruccion_node = parcialesconstruccion.as_etree_node()
+                parcialesconstruccion_node.set('xmlns:servicioparcial', 'http://www.sat.gob.mx/servicioparcialconstruccion')
+                parcialesconstruccion_node.set('xsi:schemaLocation', 'http://www.sat.gob.mx/servicioparcialconstruccion http://www.sat.gob.mx/sitio_internet/cfd/servicioparcialconstruccion/servicioparcialconstruccion.xsd')
+                if hasattr(parcialesconstruccion, 'servicios'):
+                    for servicio in parcialesconstruccion.servicios:
+                        parcialesconstruccion_node.append(servicio.as_etree_node())
+                complemento_node.append(parcialesconstruccion_node)
+
             # Declarar divisas - TODO
             # Complemento INE - TODO
 
@@ -272,6 +293,8 @@ class XmlBuilder(object):
             if has_nomina and nomina_version == '1.1':
                 Nomina = Complemento.Nomina
                 nomina_node = Nomina.as_etree_node()
+                nomina_node.set('xmlns:nomina', 'http://www.sat.gob.mx/nomina')
+                nomina_node.set('xsi:schemaLocation', 'http://www.sat.gob.mx/nomina http://www.sat.gob.mx/sitio_internet/cfd/nomina/nomina11.xsd')
                 if hasattr(Nomina, 'Percepciones'):
                     Percepciones = Nomina.Percepciones
                     percepciones_node = Percepciones.as_etree_node_recursive()
@@ -281,6 +304,8 @@ class XmlBuilder(object):
                     deducciones_node = Deducciones.as_etree_node_recursive()
                     nomina_node.append(deducciones_node)
                 complemento_node.append(nomina_node)
+
+            # ---- Nomina 1.2 - TODO
 
             if len(complemento_node.getchildren()) > 0:
                 comprobante_node.append(complemento_node)
