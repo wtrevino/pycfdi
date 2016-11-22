@@ -244,7 +244,20 @@ class XmlBuilder(object):
                 Donatarias = Complemento.Donatarias
                 complemento_node.append(Donatarias.as_etree_node())
 
-            # Complemento vehiculo - TODO
+            # --- Complemento vehiculo
+            vehiculousado_version = None
+            has_vehiculousado = hasattr(Complemento, 'VehiculoUsado')
+            if has_vehiculousado:
+                vehiculousado_version = Complemento.VehiculoUsado.Version
+
+            # ---- Complemento vehiculo 1.0
+            if has_vehiculousado and vehiculousado_version == '1.0':
+                VehiculoUsado = Complemento.VehiculoUsado
+                vehiculousado_node = VehiculoUsado.as_etree_node()
+                vehiculousado_node.set('xmlns:vehiculousado', 'http://www.sat.gob.mx/vehiculousado')
+                vehiculousado_node.set('xsi:schemaLocation', 'http://www.sat.gob.mx/vehiculousado http://www.sat.gob.mx/sitio_internet/cfd/vehiculousado/vehiculousado.xsd')
+                complemento_node.append(vehiculousado_node)
+
             # Servicios parciales constr. - TODO
             # Declarar divisas - TODO
             # Complemento INE - TODO
