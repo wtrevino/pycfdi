@@ -13,8 +13,7 @@ CADENA_ORIGINAL_3_2_PATH = os.path.join(__location__, 'assets/cadenaoriginal_3_2
 
 
 class CfdiNode(object):
-    '''
-    '''
+
     def __init__(self, tag='', **kwargs):
         self.__dict__.update(kwargs)
         self.__namespace__ = kwargs.get('_namespace', 'cfdi')
