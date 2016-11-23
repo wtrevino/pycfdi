@@ -20,7 +20,11 @@ from .utils import SAMPLE_CFDI_DOC, SAMPLE_BASE64_CERT
 
 import os
 import random
+import sys
 
+if sys.version.startswith('2.7'):
+    reload(sys)
+    sys.setdefaultencoding('utf8')
 
 __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
