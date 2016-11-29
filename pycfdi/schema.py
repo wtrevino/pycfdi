@@ -120,9 +120,7 @@ class SchemaConstructor(object):
                     'coerce': str,
                 },
                 'folio': {
-                    'type': 'integer',
-                    'min': 1,
-                    'max': int('9' * 20)
+                    'type': 'numeric',
                 },
                 'fecha': {
                     'type': 'iso8601_datetime',

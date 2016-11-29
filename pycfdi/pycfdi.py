@@ -19,6 +19,19 @@ import tempfile
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 log = logging.getLogger(__name__)
 
+try:
+    unicode = unicode
+except NameError:
+    str = str
+    unicode = str
+    bytes = bytes
+    basestring = (str, bytes)
+else:
+    str = str
+    unicode = unicode
+    bytes = str
+    basestring = basestring
+
 
 class CfdiDocumentNotValid(Exception):
     pass
@@ -36,12 +49,26 @@ class InvalidCerPemError(Exception):
     pass
 
 
+
 class Cfdi(object):
     '''
     '''
 
+    @staticmethod
+    def convert_to_unicode(input):
+        if isinstance(input, dict):
+            return dict((Cfdi.convert_to_unicode(key), Cfdi.convert_to_unicode(value)) for key, value in input.items())
+        elif isinstance(input, list):
+            return [Cfdi.convert_to_unicode(element) for element in input]
+        else:
+            try:
+                return unicode(input).encode('utf-8').decode()
+            except UnicodeDecodeError:
+                return input
+
+
     def __init__(self, document={}, version='3.2', cer_filepath=None, cerpem_filepath=None, keypem_filepath=None):
-        self.document = document
+        self.document = Cfdi.convert_to_unicode(document)
         self.version = version
         self.cer_filepath = cer_filepath
         self.cerpem_filepath = cerpem_filepath

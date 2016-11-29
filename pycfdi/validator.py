@@ -11,10 +11,16 @@ import re
 log = logging.getLogger(__name__)
 
 
+try:
+  basestring
+except NameError:
+  basestring = str
+
+
 class CfdiValidator(Validator):
 
     def _regex_validator(self, value, regex):
-        is_string = type(value) == str
+        is_string = isinstance(value, basestring)
         return is_string and bool(re.match(regex, value))
 
     def _validate_type_alphanumeric(self, value):

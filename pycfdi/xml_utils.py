@@ -5,6 +5,18 @@ from xml.etree.ElementTree import Element
 
 import os
 
+try:
+    unicode = unicode
+except NameError:
+    str = str
+    unicode = str
+    bytes = bytes
+    basestring = (str, bytes)
+else:
+    str = str
+    unicode = unicode
+    bytes = str
+    basestring = basestring
 
 __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -117,7 +129,7 @@ class CfdiNode(object):
         attributes.update(extra_attrs)
         element = Element(tag)
         for k, v in attributes.items():
-            value = '{}'.format(v)
+            value = unicode('{}').format(v)
             element.set(k, value)
         return element
 
