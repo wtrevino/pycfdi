@@ -99,28 +99,28 @@ def test_certificate_valid():
 
 def test_xml_generation():
     cfdi = pycfdi.Cfdi(SAMPLE_CFDI_DOC)
-    expected_xml = '<?xml version="1.0" encoding="utf-8"?>' \
-                '<cfdi:Comprobante LugarExpedicion="México DF" certificado="" fecha="2015-02-18T11:49:20"' \
-                ' folio="123" formaDePago="Pago único" metodoDePago="01" noCertificado="" sello="" subTot' \
-                'al="300.0" tipoDeComprobante="ingreso" total="116.0" version="3.2" xmlns:cfdi="http://ww' \
-                'w.sat.gob.mx/cfd/3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLoca' \
-                'tion="http://www.sat.gob.mx/cfd/3 http://www.sat.gob.mx/sitio_internet/cfd/3/cfdv32.xsd"' \
-                '><cfdi:Emisor nombre="John Doe" rfc="AAA010101AAA"><cfdi:DomicilioFiscal calle="Calle 20' \
-                '" codigoPostal="58010" colonia="Pinos" estado="Morelos" localidad="Cuernavaca" municipio' \
-                '="Cuernavaca" noInterior="12" pais="México" /><cfdi:ExpedidoEn calle="Calle 20" codigoPo' \
-                'stal="58010" colonia="Pinos" estado="Morelos" localidad="Cuernavaca" municipio="Cuernava' \
-                'ca" noInterior="12" pais="México" /><cfdi:RegimenFiscal Regimen="Pruebas Fiscales" /><cf' \
-                'di:RegimenFiscal Regimen="Persona Moral" /></cfdi:Emisor><cfdi:Receptor nombre="Público ' \
-                'en General" rfc="XAXX010101000"><cfdi:Domicilio calle="Calle 20" noInterior="12" pais="M' \
-                'éxico" /></cfdi:Receptor><cfdi:Conceptos><cfdi:Concepto cantidad="1.0" descripcion="AAA"' \
-                ' importe="100.0" noIdentificacion="12B" unidad="PZA" valorUnitario="100.0" /><cfdi:Conce' \
-                'pto cantidad="1.0" descripcion="BBB" importe="100.0" noIdentificacion="12B" unidad="PZA"' \
-                ' valorUnitario="100.0"><cfdi:CuentaPredial numero="12345" /></cfdi:Concepto><cfdi:Concep' \
-                'to cantidad="1.0" descripcion="CCC" importe="100.0" noIdentificacion="12B" unidad="PZA" ' \
-                'valorUnitario="100.0" /></cfdi:Conceptos><cfdi:Impuestos totalImpuestosTrasladados="16.0' \
-                '"><cfdi:Retenciones><cfdi:Retencion importe="10.0" impuesto="ISR" /></cfdi:Retenciones><' \
-                'cfdi:Traslados><cfdi:Traslado importe="16.0" impuesto="IVA" tasa="16.0" /></cfdi:Traslad' \
-                'os></cfdi:Impuestos></cfdi:Comprobante>'
+    expected_xml = u'<?xml version="1.0" encoding="utf-8"?>' \
+                u'<cfdi:Comprobante LugarExpedicion="México DF" certificado="" fecha="2015-02-18T11:49:20"' \
+                u' folio="123" formaDePago="Pago único" metodoDePago="01" noCertificado="" sello="" subTot' \
+                u'al="300.0" tipoDeComprobante="ingreso" total="116.0" version="3.2" xmlns:cfdi="http://ww' \
+                u'w.sat.gob.mx/cfd/3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLoca' \
+                u'tion="http://www.sat.gob.mx/cfd/3 http://www.sat.gob.mx/sitio_internet/cfd/3/cfdv32.xsd"' \
+                u'><cfdi:Emisor nombre="John Doe" rfc="AAA010101AAA"><cfdi:DomicilioFiscal calle="Calle 20' \
+                u'" codigoPostal="58010" colonia="Pinos" estado="Morelos" localidad="Cuernavaca" municipio' \
+                u'="Cuernavaca" noInterior="12" pais="México" /><cfdi:ExpedidoEn calle="Calle 20" codigoPo' \
+                u'stal="58010" colonia="Pinos" estado="Morelos" localidad="Cuernavaca" municipio="Cuernava' \
+                u'ca" noInterior="12" pais="México" /><cfdi:RegimenFiscal Regimen="Pruebas Fiscales" /><cf' \
+                u'di:RegimenFiscal Regimen="Persona Moral" /></cfdi:Emisor><cfdi:Receptor nombre="Público ' \
+                u'en General" rfc="XAXX010101000"><cfdi:Domicilio calle="Calle 20" noInterior="12" pais="M' \
+                u'éxico" /></cfdi:Receptor><cfdi:Conceptos><cfdi:Concepto cantidad="1.0" descripcion="AAA"' \
+                u' importe="100.0" noIdentificacion="12B" unidad="PZA" valorUnitario="100.0" /><cfdi:Conce' \
+                u'pto cantidad="1.0" descripcion="BBB" importe="100.0" noIdentificacion="12B" unidad="PZA"' \
+                u' valorUnitario="100.0"><cfdi:CuentaPredial numero="12345" /></cfdi:Concepto><cfdi:Concep' \
+                u'to cantidad="1.0" descripcion="CCC" importe="100.0" noIdentificacion="12B" unidad="PZA" ' \
+                u'valorUnitario="100.0" /></cfdi:Conceptos><cfdi:Impuestos totalImpuestosTrasladados="16.0' \
+                u'"><cfdi:Retenciones><cfdi:Retencion importe="10.0" impuesto="ISR" /></cfdi:Retenciones><' \
+                u'cfdi:Traslados><cfdi:Traslado importe="16.0" impuesto="IVA" tasa="16.0" /></cfdi:Traslad' \
+                u'os></cfdi:Impuestos></cfdi:Comprobante>'
     assert cfdi.as_xml() == expected_xml
 
 def test_xml_generation_with_stamp():

@@ -32,6 +32,7 @@ else:
     bytes = str
     basestring = basestring
 
+
 class CfdiDocumentNotValid(Exception):
     pass
 
@@ -154,8 +155,8 @@ class Cfdi(object):
             stamp_func = getattr(self, 'stamp_{}'.format(version))
             stamp_func()
         comprobante_node = self.as_etree_node()
-        #xml_string = '<?xml version="1.0" encoding="utf-8"?>' if declare_encoding else ''
-        xml_string = tostring(comprobante_node, encoding='utf-8').decode('utf-8')
+        xml_string = '<?xml version="1.0" encoding="utf-8"?>' if declare_encoding else ''
+        xml_string += tostring(comprobante_node, encoding='utf-8').decode('utf-8')
         if pretty_print:
             xml_string = minidom.parseString(xml_string)
             xml_string = xml_string.toprettyxml(indent=' ', encoding='utf-8').decode('utf-8')
