@@ -64,7 +64,7 @@ class Cfdi(object):
             try:
                 return unicode(input).encode('utf-8').decode()
             except UnicodeDecodeError:
-                return input.decode('utf-8')
+                return input
 
 
     def __init__(self, document={}, version='3.2', cer_filepath=None, cerpem_filepath=None, keypem_filepath=None):
