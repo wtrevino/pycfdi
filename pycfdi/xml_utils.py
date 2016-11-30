@@ -304,7 +304,29 @@ class XmlBuilder(object):
                 divisas_node.set('xsi:schemaLocation', 'http://www.sat.gob.mx/cfd/3 http://www.sat.gob.mx/sitio_internet/cfd/3/cfdv32.xsd http://www.sat.gob.mx/divisas http://www.sat.gob.mx/sitio_internet/cfd/divisas/divisas.xsd')
                 complemento_node.append(divisas_node)
 
+
             # Complemento INE - TODO
+            ine_version = None
+            has_ine = hasattr(Complemento, 'INE')
+            if has_ine:
+                ine_version = Complemento.INE.Version
+
+            if has_ine and ine_version == '1.1':
+                INE = Complemento.INE
+                ine_node = INE.as_etree_node()
+                ine_node.set('xmlns:ine', 'http://www.sat.gob.mx/ine')
+                ine_node.set('xsi:schemaLocation', 'http://www.sat.gob.mx/ine http://www.sat.gob.mx/sitio_internet/cfd/ine/ine11.xsd')
+                if hasattr(INE, 'entidades'):
+                    for entidad in INE.entidades:
+                        entidad_node = entidad.as_etree_node()
+                        if hasattr(entidad, 'contabilidades'):
+                            for contabilidad in entidad.contabilidades:
+                                contabilidad_node = contabilidad.as_etree_node()
+                                entidad_node.append(contabilidad_node)
+                        ine_node.append(entidad_node)
+
+                complemento_node.append(ine_node)
+
 
             # --- Nomina
             nomina_version = None
