@@ -20,6 +20,7 @@ __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 CADENA_ORIGINAL_3_2_PATH = os.path.join(__location__, 'assets/cadenaoriginal_3_2.xslt')
+CADENA_ORIGINAL_3_2_NOMINA_1_2_PATH = os.path.join(__location__, 'assets/cadenaoriginal_3_2_nomina_1_2.xslt')
 
 
 class CfdiNode(object):
