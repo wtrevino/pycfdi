@@ -78,12 +78,13 @@ class Cfdi(object):
                 return input
 
 
-    def __init__(self, document={}, version='3.2', cer_filepath=None, cerpem_filepath=None, keypem_filepath=None):
+    def __init__(self, document={}, version='3.2', cer_filepath=None, cerpem_filepath=None, keypem_filepath=None, cadena_original_path=CADENA_ORIGINAL_3_2_PATH):
         self.document = Cfdi.convert_to_unicode(document)
         self.version = version
         self.cer_filepath = cer_filepath
         self.cerpem_filepath = cerpem_filepath
         self.keypem_filepath = keypem_filepath
+        self.cadena_original_path = cadena_original_path
 
     def _get_validator(self):
         validator = CfdiValidator()
@@ -134,7 +135,7 @@ class Cfdi(object):
         xml_file, xml_path = tempfile.mkstemp()
         Cfdi.write_bytes(xml_file, xml_string)
         dom = etree.parse(xml_path)
-        xslt = etree.parse(CADENA_ORIGINAL_3_2_PATH)
+        xslt = etree.parse(self.cadena_original_path)
         transform = etree.XSLT(xslt)
         return str(transform(dom))
 
