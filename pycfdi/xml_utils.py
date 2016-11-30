@@ -290,7 +290,20 @@ class XmlBuilder(object):
                         parcialesconstruccion_node.append(servicio.as_etree_node())
                 complemento_node.append(parcialesconstruccion_node)
 
-            # Declarar divisas - TODO
+            # --- Divisas
+            divisas_version = None
+            has_divisas = hasattr(Complemento, 'Divisas')
+            if has_divisas:
+                divisas_version = Complemento.Divisas.version
+
+            # ---- Divisas 1.0
+            if has_divisas and divisas_version == '1.0':
+                Divisas = Complemento.Divisas
+                divisas_node = Divisas.as_etree_node()
+                divisas_node.set('xmlns:divisas', 'http://www.sat.gob.mx/divisas')
+                divisas_node.set('xsi:schemaLocation', 'http://www.sat.gob.mx/cfd/3 http://www.sat.gob.mx/sitio_internet/cfd/3/cfdv32.xsd http://www.sat.gob.mx/divisas http://www.sat.gob.mx/sitio_internet/cfd/divisas/divisas.xsd')
+                complemento_node.append(divisas_node)
+
             # Complemento INE - TODO
 
             # --- Nomina
