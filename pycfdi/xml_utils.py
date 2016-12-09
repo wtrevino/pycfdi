@@ -105,7 +105,7 @@ class CfdiNode(object):
         children = obj.get_children()
         element = Element(tag)
         for k, v in attributes.items():
-            value = '{}'.format(v)
+            value = unicode('{}').format(v)
             element.set(k, value)
         for k, v in children.items():
             if isinstance(v, list):
