@@ -51,7 +51,8 @@ class SchemaConstructor(object):
                     'required': True,
                 },
                 'codigoPostal': {
-                    'type': 'mx_zipcode',
+                    'type': 'string',
+                    'minlength': 1,
                 }
             }
         }
