@@ -10,18 +10,17 @@ try:
 except NameError:
     str = str
     unicode = str
-    bytes = bytes
     basestring = (str, bytes)
 else:
     str = str
     unicode = unicode
-    bytes = str
     basestring = basestring
 
 __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 CADENA_ORIGINAL_3_2_PATH = os.path.join(__location__, 'assets/cadenaoriginal_3_2.xslt')
+CADENA_ORIGINAL_3_2_NOMINA_1_2_PATH = os.path.join(__location__, 'assets/cadenaoriginal_3_2_nomina_1_2.xslt')
 
 
 class CfdiNode(object):
@@ -106,7 +105,7 @@ class CfdiNode(object):
         children = obj.get_children()
         element = Element(tag)
         for k, v in attributes.items():
-            value = '{}'.format(v)
+            value = unicode('{}').format(v)
             element.set(k, value)
         for k, v in children.items():
             if isinstance(v, list):
@@ -291,8 +290,43 @@ class XmlBuilder(object):
                         parcialesconstruccion_node.append(servicio.as_etree_node())
                 complemento_node.append(parcialesconstruccion_node)
 
-            # Declarar divisas - TODO
+            # --- Divisas
+            divisas_version = None
+            has_divisas = hasattr(Complemento, 'Divisas')
+            if has_divisas:
+                divisas_version = Complemento.Divisas.version
+
+            # ---- Divisas 1.0
+            if has_divisas and divisas_version == '1.0':
+                Divisas = Complemento.Divisas
+                divisas_node = Divisas.as_etree_node()
+                divisas_node.set('xmlns:divisas', 'http://www.sat.gob.mx/divisas')
+                divisas_node.set('xsi:schemaLocation', 'http://www.sat.gob.mx/cfd/3 http://www.sat.gob.mx/sitio_internet/cfd/3/cfdv32.xsd http://www.sat.gob.mx/divisas http://www.sat.gob.mx/sitio_internet/cfd/divisas/divisas.xsd')
+                complemento_node.append(divisas_node)
+
+
             # Complemento INE - TODO
+            ine_version = None
+            has_ine = hasattr(Complemento, 'INE')
+            if has_ine:
+                ine_version = Complemento.INE.Version
+
+            if has_ine and ine_version == '1.1':
+                INE = Complemento.INE
+                ine_node = INE.as_etree_node()
+                ine_node.set('xmlns:ine', 'http://www.sat.gob.mx/ine')
+                ine_node.set('xsi:schemaLocation', 'http://www.sat.gob.mx/ine http://www.sat.gob.mx/sitio_internet/cfd/ine/ine11.xsd')
+                if hasattr(INE, 'entidades'):
+                    for entidad in INE.entidades:
+                        entidad_node = entidad.as_etree_node()
+                        if hasattr(entidad, 'contabilidades'):
+                            for contabilidad in entidad.contabilidades:
+                                contabilidad_node = contabilidad.as_etree_node()
+                                entidad_node.append(contabilidad_node)
+                        ine_node.append(entidad_node)
+
+                complemento_node.append(ine_node)
+
 
             # --- Nomina
             nomina_version = None

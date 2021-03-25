@@ -24,12 +24,10 @@ try:
 except NameError:
     str = str
     unicode = str
-    bytes = bytes
     basestring = (str, bytes)
 else:
     str = str
     unicode = unicode
-    bytes = str
     basestring = basestring
 
 
@@ -55,6 +53,17 @@ class Cfdi(object):
     '''
 
     @staticmethod
+    def write_bytes(filepath, string):
+        try:
+            os.write(filepath, bytes(string, 'utf-8'))
+        except TypeError:
+            try:
+                os.write(filepath, string.encode('utf-8'))
+            except UnicodeDecodeError:
+                string = unicode(string.decode('utf-8')).encode('utf-8')
+                os.write(filepath, string)
+
+    @staticmethod
     def convert_to_unicode(input):
         if isinstance(input, dict):
             return dict((Cfdi.convert_to_unicode(key), Cfdi.convert_to_unicode(value)) for key, value in input.items())
@@ -63,16 +72,19 @@ class Cfdi(object):
         else:
             try:
                 return unicode(input).encode('utf-8').decode()
+            except UnicodeEncodeError:
+                return input
             except UnicodeDecodeError:
                 return input
 
 
-    def __init__(self, document={}, version='3.2', cer_filepath=None, cerpem_filepath=None, keypem_filepath=None):
+    def __init__(self, document={}, version='3.2', cer_filepath=None, cerpem_filepath=None, keypem_filepath=None, cadena_original_path=CADENA_ORIGINAL_3_2_PATH):
         self.document = Cfdi.convert_to_unicode(document)
         self.version = version
         self.cer_filepath = cer_filepath
         self.cerpem_filepath = cerpem_filepath
         self.keypem_filepath = keypem_filepath
+        self.cadena_original_path = cadena_original_path
 
     def _get_validator(self):
         validator = CfdiValidator()
@@ -121,9 +133,9 @@ class Cfdi(object):
     def _get_cadena_original(self):
         xml_string = self.as_xml()
         xml_file, xml_path = tempfile.mkstemp()
-        os.write(xml_file, bytes(xml_string, 'utf-8'))
+        Cfdi.write_bytes(xml_file, xml_string)
         dom = etree.parse(xml_path)
-        xslt = etree.parse(CADENA_ORIGINAL_3_2_PATH)
+        xslt = etree.parse(self.cadena_original_path)
         transform = etree.XSLT(xslt)
         return str(transform(dom))
 
@@ -134,7 +146,7 @@ class Cfdi(object):
             raise InvalidKeyPemError
 
         cadena_original, cadena_original_path = tempfile.mkstemp()
-        os.write(cadena_original, bytes(self._get_cadena_original(), 'utf-8'))
+        Cfdi.write_bytes(cadena_original, self._get_cadena_original())
         command = 'cat "{cadena_original_path}" | openssl dgst -sha1 -sign "{keypem_filepath}" | openssl enc -base64 -A'
         command = command.format(cadena_original_path=cadena_original_path, keypem_filepath=self.keypem_filepath)
         output = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
